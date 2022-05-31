@@ -112,14 +112,13 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "plotly"
-version = "5.6.0"
+version = "5.8.0"
 description = "An open-source, interactive data visualization library for Python"
 category = "main"
 optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
-six = "*"
 tenacity = ">=6.2.0"
 
 [[package]]
@@ -214,7 +213,7 @@ telegram = ["requests"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "a8045e5114bac71ef2c650987bdcbc5f613c84206c61857d7ef7ac7abe2f1e65"
+content-hash = "1866c40050705848b3921f41a176459f7020b0dc0d713c8c6fa465e104517d59"
 
 [metadata.files]
 colorama = [
@@ -398,8 +397,8 @@ pillow = [
     {file = "Pillow-9.0.1.tar.gz", hash = "sha256:6c8bc8238a7dfdaf7a75f5ec5a663f4173f8c367e5a39f87e720495e1eed75fa"},
 ]
 plotly = [
-    {file = "plotly-5.6.0-py2.py3-none-any.whl", hash = "sha256:20277d211ea0e00e2a86d31e9f865a1ab45a7b17576f3bb865992ecbf15db093"},
-    {file = "plotly-5.6.0.tar.gz", hash = "sha256:d86e44ebde38f4753dff982ab9b5e03cf872aab8fdf53a403e999ed378154331"},
+    {file = "plotly-5.8.0-py2.py3-none-any.whl", hash = "sha256:0e6e2382aafe2b2978d2c1b10ea93e73ad1ec80fa9a195ff6eea62af7905dfdc"},
+    {file = "plotly-5.8.0.tar.gz", hash = "sha256:58cef3292f5994d82154d51fbc7338c48009fc47ea32ffe052ad29aaa15e0df9"},
 ]
 pyparsing = [
     {file = "pyparsing-3.0.7-py3-none-any.whl", hash = "sha256:a6c06a88f252e6c322f65faf8f418b16213b51bdfaece0524c1c1bc30c63c484"},
