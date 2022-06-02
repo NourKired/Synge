@@ -70,7 +70,6 @@ NLTK is a leading platform for building Python programs to work with human langu
 
 A regular expression is a method used in programming for pattern matching. Regular expressions provide a flexible and concise means to match strings of text.
 
-
 ## For developers
 
 ### Prerequisites
