@@ -2,6 +2,215 @@ from __future__ import division
 from cluster import ClusterGenerator
 from functions import matrice_cluster
 import numpy as np
+import click
+from transformers import pipeline
+import os
+from tqdm import tqdm
+import benchmark.__init__ as init
+from nltk.tokenize import sent_tokenize
+import logging
+
+logging.basicConfig(
+    format="%(asctime)s - %(levelname)s - %(funcName)s - %(message)s ",
+    level=logging.INFO,
+)
+
+@click.group
+def cli():
+    """Represents the root cli function"""
+    pass
+
+
+@cli.command
+def version():
+    """Represents cli 'version' command"""
+    click.echo(init.__version__)
+
+@cli.command
+@click.option(
+    "-s",
+    "--seed",
+    "seed",
+    type=int,
+    # callback=validate_file_path,
+    required=False,
+    default=1
+    show_default=True,
+    help="initialize the random number generator",
+)
+
+@click.option(
+    "-ns",
+    "--n_samples",
+    "n_samples",
+    type=int,
+    # callback=validate_dir_path,
+    default=2000,
+    show_default=True,
+    help="number of total samples to generate",
+)
+@click.option(
+    "-nf",
+    "--n_feats",
+    "n_feats",
+    type=int,
+    # callback=validate_dir_path,
+    default=3,
+    show_default=True,
+    help="number of total features",
+)
+
+@click.option(
+    "-k",
+    "--n_clusters",
+    "n_clusters",
+    type=int,
+    # callback=validate_dir_path,
+    default=5,
+    show_default=True,
+    help="number of total clusters",
+)
+@click.option(
+    "-cl",
+    "--clusters_label",
+    "clusters_label",
+    type=list,
+    # callback=validate_dir_path,
+    help="number of total samples",
+)
+@click.option(
+    "-ctr",
+    "--centroids",
+    "centroids",
+    type=dict(int, list),
+    multiple=True,
+    # callback=validate_dir_path,
+    help="centroids coordinates set by the user",
+)
+@click.option(
+    "--ps",
+    "-par_shapes",
+    "parameter_shapes",
+    type=(click.Choice(['hyper Spher', 'hyper Rectangle']), float),
+    multiple=True,
+    help="the minimum probability of private data for labels",
+)
+
+@click.option(
+    "-wc",
+    "--weight_cluster",
+    "weight_cluster",
+    type=int,
+    # callback=validate_dir_path,
+    default=2000,
+    show_default=True,
+    help="number of total samples to generate",
+)
+@click.option(
+    "-d",
+    "--distributions",
+    "distributions",
+    type=int,
+    # callback=validate_dir_path,
+    default=2000,
+    show_default=True,
+    help="number of total samples to generate",
+)
+@click.option(
+    "-sc",
+    "--scale",
+    "scale",
+    type=int,
+    # callback=validate_dir_path,
+    default=2000,
+    show_default=True,
+    help="number of total samples to generate",
+)
+@click.option(
+    "-r",
+    "--rotate",
+    "rotate",
+    type=int,
+    # callback=validate_dir_path,
+    default=2000,
+    show_default=True,
+    help="number of total samples to generate",
+)
+@click.option(
+    "-shp",
+    "--shapes",
+    "shapes",
+    type=int,
+    # callback=validate_dir_path,
+    default=2000,
+    show_default=True,
+    help="number of total samples to generate",
+)
+@click.option(
+    "-ch",
+    "--chevauchement",
+    "chevauchement",
+    type=int,
+    # callback=validate_dir_path,
+    default=2000,
+    show_default=True,
+    help="number of total samples to generate",
+)
+@click.option(
+    "-prs",
+    "--parametres_shapes",
+    "parametres_shapes",
+    type=int,
+    # callback=validate_dir_path,
+    default=2000,
+    show_default=True,
+    help="number of total samples to generate",
+)
+@click.option(
+    "--dry-run",
+    "dry_run",
+    type=bool,
+    is_flag=True,
+    default=False,
+    help="passthrough, will not write anything",
+)
+
+
+
+def pii_detect(
+    input_file: str,
+    out_dir: str,
+    thresh,
+    overwrite: bool = False,
+    dry_run: bool = False,
+    to_test: bool = False,
+):
+    """Represents cli 'pii_detect' command"""
+    # validate_args(sentence, thresh)
+    tresh_dict = dict(thresh)
+    thresholds = {
+        tag: tresh_dict[tag] if tag in tresh_dict.keys() else threshs[tag]
+        for tag in threshs.keys()
+    }
+    file_name = os.path.basename(input_file).split(".")[0]
+    with open(input_file) as f:
+        list_sent = [line.rstrip() for line in f]
+    text = " ".join(list_sent)
+    df = sent_tokenize(text)
+    logging.info("loading pipeline")
+    pipe = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+    logging.info("prediction in progress")
+    detected_labels: list = [
+        predict(pipe, sent, thresholds) for sent in tqdm(df, total=len(df))
+    ]
+    logging.info("saving results...")
+    out(input_file, out_dir, file_name, detected_labels, dry_run, overwrite, to_test)
+
+
+if __name__ == "__main__":
+    cli()
+
+
 
 shapes = [["hyper Sphere", "hyper Sphere"], ["hyper Sphere"]]
 k = 4
