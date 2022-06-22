@@ -3,17 +3,14 @@ from cluster import ClusterGenerator
 from functions import matrice_cluster
 import numpy as np
 import click
-from transformers import pipeline
-import os
-from tqdm import tqdm
-import benchmark.__init__ as init
-from nltk.tokenize import sent_tokenize
+import __init__ as init
 import logging
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(funcName)s - %(message)s ",
     level=logging.INFO,
 )
+
 
 @click.group
 def cli():
@@ -26,6 +23,7 @@ def version():
     """Represents cli 'version' command"""
     click.echo(init.__version__)
 
+
 @cli.command
 @click.option(
     "-s",
@@ -34,18 +32,17 @@ def version():
     type=int,
     # callback=validate_file_path,
     required=False,
-    default=1
+    default=1,
     show_default=True,
     help="initialize the random number generator",
 )
-
 @click.option(
     "-ns",
     "--n_samples",
     "n_samples",
     type=int,
     # callback=validate_dir_path,
-    default=2000,
+    default=800,
     show_default=True,
     help="number of total samples to generate",
 )
@@ -59,7 +56,6 @@ def version():
     show_default=True,
     help="number of total features",
 )
-
 @click.option(
     "-k",
     "--n_clusters",
@@ -76,13 +72,13 @@ def version():
     "clusters_label",
     type=list,
     # callback=validate_dir_path,
-    help="number of total samples",
+    help="label of clusters",
 )
 @click.option(
     "-ctr",
     "--centroids",
     "centroids",
-    type=dict(int, list),
+    type=dict,
     multiple=True,
     # callback=validate_dir_path,
     help="centroids coordinates set by the user",
@@ -90,49 +86,43 @@ def version():
 @click.option(
     "--ps",
     "-par_shapes",
-    "parameter_shapes",
-    type=(click.Choice(['hyper Spher', 'hyper Rectangle']), float),
+    "par_shapes",
+    type=dict,
     multiple=True,
-    help="the minimum probability of private data for labels",
+    help="principale shape of cluster",
 )
-
 @click.option(
     "-wc",
     "--weight_cluster",
     "weight_cluster",
-    type=int,
+    type=list,
     # callback=validate_dir_path,
-    default=2000,
     show_default=True,
-    help="number of total samples to generate",
+    help="percent of samples in each cluster",
 )
 @click.option(
     "-d",
     "--distributions",
     "distributions",
-    type=int,
+    type=list,
     # callback=validate_dir_path,
-    default=2000,
-    show_default=True,
-    help="number of total samples to generate",
+    help="destributions of each cluster",
 )
 @click.option(
     "-sc",
     "--scale",
     "scale",
-    type=int,
+    type=list,
     # callback=validate_dir_path,
-    default=2000,
     show_default=True,
-    help="number of total samples to generate",
+    help="if scale or not ",
 )
 @click.option(
     "-r",
     "--rotate",
     "rotate",
-    type=int,
+    type=list,
     # callback=validate_dir_path,
-    default=2000,
     show_default=True,
     help="number of total samples to generate",
 )
@@ -140,9 +130,8 @@ def version():
     "-shp",
     "--shapes",
     "shapes",
-    type=int,
+    type=list,
     # callback=validate_dir_path,
-    default=2000,
     show_default=True,
     help="number of total samples to generate",
 )
@@ -150,21 +139,28 @@ def version():
     "-ch",
     "--chevauchement",
     "chevauchement",
-    type=int,
+    type=list,
     # callback=validate_dir_path,
-    default=2000,
     show_default=True,
-    help="number of total samples to generate",
+    help="list of tuple= (label of 1st cluster, label of 2nd cluster, percentage of overlap of the 2nd with the 1st)",
 )
 @click.option(
     "-prs",
     "--parametres_shapes",
     "parametres_shapes",
-    type=int,
+    type=dict,
     # callback=validate_dir_path,
-    default=2000,
     show_default=True,
-    help="number of total samples to generate",
+    help="list of tuple of size n cluster ; typle=(main form,a)",
+)
+@click.option(
+    "-prd",
+    "--parametres_distributions",
+    "parametres_distributions",
+    type=dict,
+    # callback=validate_dir_path,
+    show_default=True,
+    help="parameters of distributions",
 )
 @click.option(
     "--dry-run",
@@ -174,249 +170,114 @@ def version():
     default=False,
     help="passthrough, will not write anything",
 )
-
-
-
-def pii_detect(
-    input_file: str,
-    out_dir: str,
-    thresh,
-    overwrite: bool = False,
-    dry_run: bool = False,
-    to_test: bool = False,
+def data_generator(
+    seed,
+    n_samples,
+    n_feats,
+    n_clusters,
+    clusters_label,
+    centroids,
+    par_shapes,
+    weight_cluster,
+    distributions,
+    scale,
+    rotate,
+    shapes,
+    chevauchement,
+    parametres_distributions,
+    parametres_shapes,
+    dry_run,
 ):
-    """Represents cli 'pii_detect' command"""
-    # validate_args(sentence, thresh)
-    tresh_dict = dict(thresh)
-    thresholds = {
-        tag: tresh_dict[tag] if tag in tresh_dict.keys() else threshs[tag]
-        for tag in threshs.keys()
+    # seed=1
+    n_samples = 5000
+    n_feats = 2
+    n_clusters = 4
+    clusters_label = np.arange(4)
+    centroids = {0: [0.5, 0.5], 1: [0.5, 0.4], 3: (0, 0)}
+    par_shapes = {
+        0: ("hyper Sphere", 0.9),
+        1: ("hyper Sphere", 0.4),
+        2: ("hyper Sphere", 0.2),
     }
-    file_name = os.path.basename(input_file).split(".")[0]
-    with open(input_file) as f:
-        list_sent = [line.rstrip() for line in f]
-    text = " ".join(list_sent)
-    df = sent_tokenize(text)
-    logging.info("loading pipeline")
-    pipe = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-    logging.info("prediction in progress")
-    detected_labels: list = [
-        predict(pipe, sent, thresholds) for sent in tqdm(df, total=len(df))
-    ]
-    logging.info("saving results...")
-    out(input_file, out_dir, file_name, detected_labels, dry_run, overwrite, to_test)
+    weight_cluster = [1 / 4 for _ in range(4)]
+    distributions = "gaussian"
+    scale = False
+    rotate = False
+    shapes = [["hyper Sphere", "hyper Sphere"], ["hyper Sphere"]]
+    chevauchement = None
+    parametres_distributions = {0: (0.3, 0.6), 1: (0.3, 0.6), 3: (-0.2, 0.2)}
+    parametres_shapes = {
+        0: [[[0.5, 0.5], 0.5, "-"], [[0.5, 0.6], 0.3, "-"]],
+        1: [[[0.5, 0.1], 0.2, "-"]],
+    }
+    dry_run = False
+    gnr = ClusterGenerator(
+        seed=seed,
+        n_samples=n_samples,
+        n_feats=n_feats,
+        k=n_clusters,
+        clusters_label=clusters_label,
+        centroids=centroids,
+        par_shapes=par_shapes,
+        weight_cluster=weight_cluster,
+        distributions=distributions,
+        parametres_distributions=parametres_distributions,
+        scale=scale,
+        rotate=rotate,
+        shapes=shapes,
+        chevauchement=chevauchement,
+        parametres_shapes=parametres_shapes,
+    )
+
+    X, y = gnr.generate_data()
+    M = matrice_cluster(X, y)
+    # print(M)
+    return M
 
 
 if __name__ == "__main__":
     cli()
+    # seed = 1,
+    # n_samples = 5000,
+    # n_feats = 2,
+    # n_clusters = 4,
+    # clusters_label=np.arange(4),
+    # centroids={0: [0.5, 0.5], 1: [0.5, 0.4], 3: (0, 0)},
+    # par_shapes={
+    #         0: ("hyper Sphere", 0.9),
+    #         1: ("hyper Sphere", 0.4),
+    #         2: ("hyper Sphere", 0.2),
+    #     },
+    # weight_cluster=[1 / 4 for _ in range(4)],
+    # distributions=["gaussian"],
+    # scale = [False],
+    # rotate = [False],
+    # shapes=[["hyper Sphere", "hyper Sphere"], ["hyper Sphere"]],
+    # chevauchement=None,
+    # parametres_distributions={0: (0.3, 0.6), 1: (0.3, 0.6), 3: (-0.2, 0.2)},
+    # parametres_shapes={
+    #         0: [[[0.5, 0.5], 0.5, "-"], [[0.5, 0.6], 0.3, "-"]],
+    #         1: [[[0.5, 0.1], 0.2, "-"]],}
+    # ):
+    # k=n_clusters
+    # gnr = ClusterGenerator(
+    #     seed,
+    #     n_samples,
+    #     n_feats,
+    #     k,
+    #     clusters_label,
+    #     centroids,
+    #     par_shapes,
+    #     weight_cluster,
+    #     distributions,
+    #     parametres_distributions,
+    #     scale,
+    #     rotate,
+    #     shapes,
+    #     chevauchement,
+    #     parametres_shapes
+    # )
 
-
-
-shapes = [["hyper Sphere", "hyper Sphere"], ["hyper Sphere"]]
-k = 4
-gnr = ClusterGenerator(
-    seed=1,
-    n_samples=5000,
-    n_feats=2,
-    k=4,
-    clusters_label=np.arange(k),
-    centroids={0: [0.5, 0.5], 1: [0.5, 0.4], 3: (0, 0)},
-    par_shapes={
-        0: ("hyper Sphere", 0.9),
-        1: ("hyper Sphere", 0.4),
-        2: ("hyper Sphere", 0.2),
-    },
-    weight_cluster=[1 / k for _ in range(k)],
-    distributions="gaussian",
-    parametres_distributions={0: (0.3, 0.6), 1: (0.3, 0.6), 3: (-0.2, 0.2)},
-    scale=False,
-    rotate=False,
-    shapes=shapes,
-    chevauchement=None,
-    parametres_shapes={
-        0: [[[0.5, 0.5], 0.5, "-"], [[0.5, 0.6], 0.3, "-"]],
-        1: [[[0.5, 0.1], 0.2, "-"]],
-    },
-)
-
-X, y = gnr.generate_data()
-M = matrice_cluster(X, y)
-
-print(M)
-# # cercle
-
-
-# fig, ax = plt.subplots()
-
-# # # plt.grid(linestyle='--')
-
-# x, y = list(zip(*M[0]))  # cercle
-
-# ax.scatter(x, y)
-
-# x, y = list(zip(*M[2]))  # cercle
-
-# ax.scatter(x, y)
-
-
-# ax.set_aspect(1)
-
-
-# shapes = [['hyper Sphere', 'hyper Sphere'], ['hyper Sphere']]
-# k = 4
-# gnr = ClusterGenerator(seed=1, n_samples=5000, n_feats=2, k=4, clusters_label=np.arange(k),
-#                        centroids={0: [0.5, 0.5], 1: [0.5, 0.5], 2: [0.3, 0.4]}, par_shapes={0: ('hyper Sphere', 0.9), 1: ('hyper Sphere', 0.4), 2: ('hyper Sphere', 0.2)},
-#                        weight_cluster=[1 / k for _ in range(k)], distributions='gaussian',
-#                        parametres_distributions={0: (0.3, 0.6), 1: (0.3, 0.6), 3: (-0.2, 0.2)}, scale=False, rotate=False,
-#                        shapes=shapes, chevauchement=None,
-#                        parametres_shapes={0: [[[0.5, 0.5], 0.5, '-'], [[0.5, 0.6], 0.3, '-']], 1: [[[0.5, 0.1], 0.2, '-']]})
-
-# X,y=gnr.generate_data()
-# M=matrice_cluster(X,y)
-
-
-# # cercle
-
-# # # plt.grid(linestyle='--')
-
-# x, y = list(zip(*M[0]))# cercle
-
-# ax.scatter(x,y)
-
-# x, y = list(zip(*M[2]))# cercle
-
-# ax.scatter(x,y)
-
-# # x, y = list(zip(*M[1]))# cercle
-
-# # ax.scatter(x,y)
-# # x, y = list(zip(*M[3]))# cercle
-
-# # ax.scatter(x,y)
-
-
-# ax.set_aspect(1)
-
-
-# shapes=[['hyper Sphere','hyper Sphere'],['hyper Sphere']]
-# k=4
-# gnr=ClusterGenerator(seed=1, n_samples=5000, n_feats=4, k=4,clusters_label=np.arange(k),
-#                      centroids={0:[0.5,0.5,0,0],1:[0.5,0.5,0,0],2:[0.3,0.4,0,0]},par_shapes={0:('hyper Sphere',0.9),1:('hyper Sphere',0.4),2:('hyper Sphere',0.2)},
-#                       weight_cluster=[1/k for _ in range(k)],distributions='gaussian',
-#                      parametres_distributions={0:(0.3,0.6,0,0),1:(0.3,0.6,0,0),3:(-0.2,0.2,0,0)},scale=False, rotate=False,
-#                      shapes=shapes,chevauchement=None,
-#                      parametres_shapes={0:[[[0.5,0.5,0,0],0.5,'-'],[[0.5,0.6,0,0],0.3,'-']],1:[[[[0.5,0.1,0,0],0.2,'-']]]})
-
-# X,y=gnr.generate_data()
-# M=matrice_cluster(X,y)
-
-
-# fig, ax = plt.subplots()
-
-
-# nb_feats= int(input('nb of features to plot '))
-# nb_clusters= int(input('nb of clusters to plot '))
-# listes=combinliste(np.arange(nb_feats),3)
-# Y=y ##  à commenter en cas de 2eme exécution
-# y=list(set(y.reshape(-1)))[:nb_clusters] ## à excuter qu'une seule fois ( pour une deuxieme exécution commenter cette ligne et la precedente)
-
-# opacity: dict = {i:1 for i in y}
-
-
-# # sc: StandardScaler = StandardScaler() # parametre à demander à l'utilisateur
-# # X: np.ndarray = sc.fit_transform(X)
-# # pca: PCA = PCA(n_components=X.shape[1]) # nombre de dimensions -- > à demander à l'utilisateur
-# # X: np.ndarray = pca.fit_transform(X)
-# j=1
-# data: list = []
-# name: dict = {i:str('%d.%d' % (j, i)) for i, val in zip(y, y)} # num des clusters
-
-
-# data_plot: pd.DataFrame = pd.DataFrame(X)
-# data_plot["prediction"] = Y
-#     # data_plot["prediction"] = prediction.replace([-1,1], name)
-# data: dict ={}
-# # fig = make_subplots(rows=1, cols=1)
-# for (i1,i2,i3) in listes:
-#   dataa=[]
-#   for i, val in zip(y, y):
-#     data_semi_plot: pd.DataFrame = data_plot[data_plot["prediction"] == val]
-#     dataa.append(go.Scatter3d(x=data_semi_plot[i1], y=data_semi_plot[i2], z=data_semi_plot[i3], name=name[val], mode='markers',marker=dict(size=6), opacity=opacity[i]))
-#   data[(i1,i2,i3)]=dataa
-
-
-# fig = make_subplots(
-#     rows=len(listes),
-#     cols=1,
-#     specs=[[{"type": "scatter3d"}]]*len(listes),
-#     subplot_titles=[str('%d.%d.%d '% (i,j,k)) for (i,j,k )in listes])
-
-# count=0
-# for ((i1,i2,i3),d) in data.items():
-#   count+=1
-#   fig.add_traces(d, rows=[count]*len(d), cols=[1]*len(d))
-
-
-# fig.update_layout(width=1000,height=4000,showlegend=True)
-
-# fig.show()
-
-# shapes=[['hyper Sphere','hyper Sphere'],['hyper Sphere']]
-# k=4
-# gnr=ClusterGenerator(seed=1, n_samples=5000, n_feats=4, k=4,clusters_label=np.arange(k),
-#                      centroids={0:[0.5,0.5,0,0],1:[0.5,0.5,0,0],2:(0.3,0.4,0,0)},par_shapes={0:('hyper Sphere',0.9),1:('hyper Sphere',0.4),2:('hyper Sphere',0.2)},
-#                       weight_cluster=[1/k for _ in range(k)],distributions='gaussian',
-#                      parametres_distributions={0:(0.3,0.6,0,0),1:(0.3,0.6,0,0),3:(-0.2,0.2,0,0)},scale=False, rotate=False,
-#                      shapes=shapes,chevauchement=None,
-#                      parametres_shapes={0:([[0.5,0.5,0,0],0.5,'-'],[[0.5,0.6,0,0],0.3,'-']),1:([[[0.5,0.1,0,0],0.2,'-']])})
-
-# X,y=gnr.generate_data()
-# M=matrice_cluster(X,y)
-
-
-# nb_feats= int(input('nb of features to plot '))
-# nb_clusters= int(input('nb of clusters to plot '))
-# listes=combinliste(np.arange(nb_feats),3)
-# Y=y ##  à commenter en cas de 2eme exécution
-# y=list(set(y.reshape(-1)))[:nb_clusters] ## à excuter qu'une seule fois ( pour une deuxieme exécution commenter cette ligne et la precedente)
-
-# opacity: dict = {i:1 for i in y}
-
-
-# # sc: StandardScaler = StandardScaler() # parametre à demander à l'utilisateur
-# # X: np.ndarray = sc.fit_transform(X)
-# # pca: PCA = PCA(n_components=X.shape[1]) # nombre de dimensions -- > à demander à l'utilisateur
-# # X: np.ndarray = pca.fit_transform(X)
-# j=1
-# data: list = []
-# name: dict = {i:str('%d.%d' % (j, i)) for i, val in zip(y, y)} # num des clusters
-
-
-# data_plot: pd.DataFrame = pd.DataFrame(X)
-# data_plot["prediction"] = Y
-#     # data_plot["prediction"] = prediction.replace([-1,1], name)
-# data: dict ={}
-# # fig = make_subplots(rows=1, cols=1)
-# for (i1,i2,i3) in listes:
-#   dataa=[]
-#   for i, val in zip(y, y):
-#     data_semi_plot: pd.DataFrame = data_plot[data_plot["prediction"] == val]
-#     dataa.append(go.Scatter3d(x=data_semi_plot[i1], y=data_semi_plot[i2], z=data_semi_plot[i3], name=name[val], mode='markers',marker=dict(size=6), opacity=opacity[i]))
-#   data[(i1,i2,i3)]=dataa
-
-
-# fig = make_subplots(
-#     rows=len(listes),
-#     cols=1,
-#     specs=[[{"type": "scatter3d"}]]*len(listes),
-#     subplot_titles=[str('%d.%d.%d '% (i,j,k)) for (i,j,k )in listes])
-
-# count=0
-# for ((i1,i2,i3),d) in data.items():
-#   count+=1
-#   fig.add_traces(d, rows=[count]*len(d), cols=[1]*len(d))
-
-
-# fig.update_layout(width=1000,height=4000,showlegend=True)
-
-# fig.show()
+    # X, y = gnr.generate_data()
+    # M = matrice_cluster(X, y)
+    # return M

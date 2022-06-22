@@ -89,7 +89,6 @@ class ClusterGenerator(object):
         self._shapes = None
         self._validate_parameters()
         self.clusters = self.get_cluster_configs()
-
         self._centroids = None
         self._locis = None
         self._idx = None

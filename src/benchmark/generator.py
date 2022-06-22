@@ -9,6 +9,7 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
+
 def verify_shape(d_iter, shape, param, cluster, samples, clus_cfg, label):
     """documentation:
     cette fonction est utilisé pour conserver que les points dans les formes complexes
@@ -60,7 +61,7 @@ def apply_cdt(A, centr, R) -> list[list]:
     cette fonction est utilisé pour definir la zone du cluster " maximale"( apres la generation des données) avant application des formes
     parameters:
     """
-    D : list = []
+    D: list = []
     [D.append(i) for i in list(A) if np.all(np.abs(np.array(i) - centr) <= R)]
     return D
 

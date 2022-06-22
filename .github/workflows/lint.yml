@@ -137,7 +137,4 @@ jobs:
         if: ${{ failure() }}
         uses: codelytv/no-pull-requests@v1
         with:
-          GITHUB_TOKEN: ${{ secrets.OKP4_TOKEN }}
           message: 🙅 Closing the PR because it does not respect naming conventions. Edit the branch name and submit a new PR.
-    env:
-      GITHUB_TOKEN: ${{ secrets.OKP4_TOKEN }}
