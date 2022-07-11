@@ -6,7 +6,7 @@ authors = ["NourKired <n.kired@okp4.com>"]
 
 [tool.poetry.dependencies]
 python = "3.10"
-numpy = "^1.22.4"
+numpy = "^1.23.1"
 six = "^1.16.0"
 tqdm = "^4.64.0"
 scipy = "^1.8.1"
