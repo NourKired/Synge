@@ -1,39 +1,41 @@
 from __future__ import division
-from cluster import ClusterGenerator
-from functions import matrice_cluster
+from synge.cluster import ClusterGenerator
+from synge.functions import matrice_cluster
 import numpy as np
+from matplotlib import pyplot as plt
 
-shapes = [["hyper Sphere", "hyper Sphere"], ["hyper Sphere"]]
-k = 4
-gnr = ClusterGenerator(
-    seed=1,
-    n_samples=5000,
-    n_feats=2,
-    k=4,
-    clusters_label=np.arange(k),
-    centroids={0: [0.5, 0.5], 1: [0.5, 0.4], 3: (0, 0)},
-    par_shapes={
-        0: ("hyper Sphere", 0.9),
-        1: ("hyper Sphere", 0.4),
-        2: ("hyper Sphere", 0.2),
-    },
-    weight_cluster=[1 / k for _ in range(k)],
-    distributions="gaussian",
-    parametres_distributions={0: (0.3, 0.6), 1: (0.3, 0.6), 3: (-0.2, 0.2)},
-    scale=False,
-    rotate=False,
-    shapes=shapes,
-    chevauchement=None,
-    parametres_shapes={
-        0: [[[0.5, 0.5], 0.5, "-"], [[0.5, 0.6], 0.3, "-"]],
-        1: [[[0.5, 0.1], 0.2, "-"]],
-    },
-)
 
-X, y = gnr.generate_data()
-M = matrice_cluster(X, y)
+# shapes = [["hyper Sphere", "hyper Sphere"], ["hyper Sphere"]]
+# n_cluster = 4
+# gnr = ClusterGenerator(
+#     seed=1,
+#     n_samples=5000,
+#     n_feats=2,
+#     n_cluster=4,
+#     clusters_label=np.arange(n_cluster),
+#     centroids={0: [0.5, 0.5], 1: [0.5, 0.4], 3: (0, 0)},
+#     par_shapes={
+#         0: ("hyper Sphere", 0.9),
+#         1: ("hyper Sphere", 0.4),
+#         2: ("hyper Sphere", 0.2),
+#     },
+#     weight_cluster=[1 / n_cluster for _ in range(n_cluster)],
+#     distributions="gaussian",
+#     parametres_distributions={0: (0.3, 0.6), 1: (0.3, 0.6), 3: (-0.2, 0.2)},
+#     scale=False,
+#     rotate=False,
+#     shapes=shapes,
+#     chevauchement=None,
+#     parametres_shapes={
+#         0: [[[0.5, 0.5], 0.5, "-"], [[0.5, 0.6], 0.3, "-"]],
+#         1: [[[0.5, 0.1], 0.2, "-"]],
+#     },
+# )
 
-print(M)
+# X, y = gnr.generate_data()
+# M = matrice_cluster(X, y)
+
+# print("ok")
 # # cercle
 
 
@@ -53,30 +55,48 @@ print(M)
 # ax.set_aspect(1)
 
 
-# shapes = [['hyper Sphere', 'hyper Sphere'], ['hyper Sphere']]
+# # shapes = [['hyper Sphere', 'hyper Sphere'], ['hyper Sphere']]
 # k = 4
-# gnr = ClusterGenerator(seed=1, n_samples=5000, n_feats=2, k=4, clusters_label=np.arange(k),
-#                        centroids={0: [0.5, 0.5], 1: [0.5, 0.5], 2: [0.3, 0.4]}, par_shapes={0: ('hyper Sphere', 0.9), 1: ('hyper Sphere', 0.4), 2: ('hyper Sphere', 0.2)},
-#                        weight_cluster=[1 / k for _ in range(k)], distributions='gaussian',
-#                        parametres_distributions={0: (0.3, 0.6), 1: (0.3, 0.6), 3: (-0.2, 0.2)}, scale=False, rotate=False,
-#                        shapes=shapes, chevauchement=None,
-#                        parametres_shapes={0: [[[0.5, 0.5], 0.5, '-'], [[0.5, 0.6], 0.3, '-']], 1: [[[0.5, 0.1], 0.2, '-']]})
+# gnr = ClusterGenerator(
+#     seed=1,
+#     n_samples=5000,
+#     n_feats=2,
+#     n_cluster=4,
+#     clusters_label=np.arange(k),
+#     centroids={0: [0.5, 0.5], 1: [0.5, 0.5], 2: [0.3, 0.4]},
+#     par_shapes={
+#         0: ("hyper Sphere", 0.9),
+#         1: ("hyper Sphere", 0.4),
+#         2: ("hyper Sphere", 0.2),
+#     },
+#     weight_cluster=[1 / k for _ in range(k)],
+#     distributions="gaussian",
+#     parametres_distributions={0: (0.3, 0.6), 1: (0.3, 0.6), 3: (-0.2, 0.2)},
+#     scale=False,
+#     rotate=False,
+#     shapes=shapes,
+#     chevauchement=None,
+#     parametres_shapes={
+#         0: [[[0.5, 0.5], 0.5, "-"], [[0.5, 0.6], 0.3, "-"]],
+#         1: [[[0.5, 0.1], 0.2, "-"]],
+#     },
+# )
 
-# X,y=gnr.generate_data()
-# M=matrice_cluster(X,y)
-
+# X, y = gnr.generate_data()
+# M = matrice_cluster(X, y)
+# print("ok")
 
 # # cercle
 
 # # # plt.grid(linestyle='--')
 
-# x, y = list(zip(*M[0]))# cercle
+# x, y = list(zip(*M[0]))  # cercle
 
-# ax.scatter(x,y)
+# ax.scatter(x, y)
 
-# x, y = list(zip(*M[2]))# cercle
+# x, y = list(zip(*M[2]))  # cercle
 
-# ax.scatter(x,y)
+# ax.scatter(x, y)
 
 # # x, y = list(zip(*M[1]))# cercle
 
@@ -89,20 +109,39 @@ print(M)
 # ax.set_aspect(1)
 
 
-# shapes=[['hyper Sphere','hyper Sphere'],['hyper Sphere']]
-# k=4
-# gnr=ClusterGenerator(seed=1, n_samples=5000, n_feats=4, k=4,clusters_label=np.arange(k),
-#                      centroids={0:[0.5,0.5,0,0],1:[0.5,0.5,0,0],2:[0.3,0.4,0,0]},par_shapes={0:('hyper Sphere',0.9),1:('hyper Sphere',0.4),2:('hyper Sphere',0.2)},
-#                       weight_cluster=[1/k for _ in range(k)],distributions='gaussian',
-#                      parametres_distributions={0:(0.3,0.6,0,0),1:(0.3,0.6,0,0),3:(-0.2,0.2,0,0)},scale=False, rotate=False,
-#                      shapes=shapes,chevauchement=None,
-#                      parametres_shapes={0:[[[0.5,0.5,0,0],0.5,'-'],[[0.5,0.6,0,0],0.3,'-']],1:[[[[0.5,0.1,0,0],0.2,'-']]]})
+shapes = [["hyper Sphere", "hyper Sphere"], ["hyper Sphere"]]
+k = 4
+gnr = ClusterGenerator(
+    seed=1,
+    n_samples=5000,
+    n_feats=4,
+    n_cluster=k,
+    clusters_label=np.arange(k),
+    centroids={0: [0.5, 0.5, 0, 0], 1: [0.5, 0.5, 0, 0], 2: [0.3, 0.4, 0, 0]},
+    par_shapes={
+        0: ("hyper Sphere", 0.9),
+        1: ("hyper Sphere", 0.4),
+        2: ("hyper Sphere", 0.2),
+    },
+    weight_cluster=[1 / k for _ in range(k)],
+    distributions="gaussian",
+    parametres_distributions={
+        0: (0.3, 0.6, 0, 0),
+        1: (0.3, 0.6, 0, 0),
+        3: (-0.2, 0.2, 0, 0),
+    },
+    scale=False,
+    rotate=False,
+    shapes=shapes,
+    chevauchement=None,
+    parametres_shapes={
+        0: [[[0.5, 0.5, 0, 0], 0.5, "-"], [[0.5, 0.6, 0, 0], 0.3, "-"]],
+        1: [[[0.5, 0.1, 0, 0], 0.2, "-"]],
+    },
+)
 
-# X,y=gnr.generate_data()
-# M=matrice_cluster(X,y)
-
-
-# fig, ax = plt.subplots()
+X, y = gnr.generate_data()
+M = matrice_cluster(X, y)
 
 
 # nb_feats= int(input('nb of features to plot '))

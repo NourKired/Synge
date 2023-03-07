@@ -2,8 +2,8 @@ from __future__ import division
 from six import string_types
 from numbers import Number
 import six
-from disribution import get_dist_function
-from functions import get_shape_function
+from synge.distribution import get_dist_function
+from synge.functions import get_shape_function
 
 
 def _validate_corr(corr):
@@ -33,7 +33,7 @@ def _validate_parametres_distributions(parametres_distributions):
     Returns:
         bool: True if valid. Raises exception if not.
     """
-    if not isinstance(parametres_distributions, tuple):
+    if len(parametres_distributions) != 2:
         raise ValueError(
             'Invalid input value for "parametres_distributions"! Values must be numeric'
         )
@@ -172,7 +172,7 @@ def _validate_mv(mv):
     return True
 
 
-def check_input(distributions):
+def _initialize_distribution(distributions):
     """
     Checks if the input distributions are valid. That is, check if they are either strings or functions. If they are
     strings, also check if they are contained in `distributions_list`.
@@ -185,11 +185,11 @@ def check_input(distributions):
         [get_dist_function(d) for d in lst]
         if hasattr(lst, "__iter__") and not isinstance(lst, string_types)
         else get_dist_function(lst)
-        for lst in distributions
+        for lst in distributions.values()
     ]
 
 
-def check_input_(Shapes):
+def _initialize_secondary_shape(Shapes):
     """
     Checks if the input Shape are valid. That is, check if they are either strings or functions. If they are
     strings, also check if they are contained in `Shape`.
@@ -204,12 +204,12 @@ def check_input_(Shapes):
         else ""
         for k in Shapes
     ]
-    for (i, shape) in enumerate(Shapes):
+    for i, shape in enumerate(Shapes):
         if shape is not None:
             if isinstance(shape, list):
-                for (j, s) in enumerate(shape):
+                for j, s in enumerate(shape):
                     if isinstance(s, list):
-                        for (k, l) in enumerate(s):
+                        for k, l in enumerate(s):
                             if not isinstance(l, string_types):
                                 raise ValueError("Invalid Shape input!")
                             else:
@@ -224,7 +224,7 @@ def check_input_(Shapes):
     return out
 
 
-def check_input_P(Shapes_):
+def _initialize_prinicipal_shape(Shapes_):
     """
     Checks if the input Shape are valid. That is, check if they are either strings or functions. If they are
     strings, also check if they are contained in `Shape`.
