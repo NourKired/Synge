@@ -2,7 +2,8 @@ from __future__ import division
 import numpy as np
 from six import string_types
 import scipy
-from generator import Shape, hyperRectangle, hyperSphere
+from synge.shape import Shape, hyperRectangle, hyperSphere
+import json
 
 
 def get_rotation_matrix(n_feats):
@@ -16,11 +17,20 @@ def get_rotation_matrix(n_feats):
         return get_rotation_matrix(n_feats)
 
 
+def read_data(val: str) -> dict:
+    if val is not None:
+        with open(r"" + str(val), "r", encoding="utf-8") as f:
+            data: dict = json.load(f)
+        return dict(
+            zip([int(key) for key in data.keys()], [value for value in data.values()])
+        )
+
+
 # CELLULE IMPORTANTE POUR LES PLOTS
-def combinliste(seq, k):
+def combinliste(seq: list, k: int) -> list:
     """
-    Doc: cette fonction renvoie en sortie les differents combinaison de k elem parmis seq
-    utile pour generer les diffentes combinaision des dimensions pour les plots
+    Doc: this function returns as output the different combination of k elem among seq
+    useful to generate the different combination of dimensions for the plots
     """
     p = []
     i, imax = 0, 2 ** len(seq) - 1
@@ -39,7 +49,7 @@ def combinliste(seq, k):
 
 def matrice_cluster(X, y) -> list:
     """
-    Doc : cette fonction renvoie les une liste, ou chaque elem correspond à la matrice de données des clusters
+    Doc : this function returns a list, where each element corresponds to the cluster data matrix
     """
     matrice_cluster = []
     y1 = y.reshape(-1)

@@ -1,6 +1,6 @@
 import numpy as np
 from six import string_types, integer_types
-from generator import _intradistance_aux, _aux_rms
+from synge.shape import _intradistance_aux, _aux_rms
 
 
 def _validate_shape(shape):
@@ -12,7 +12,6 @@ def _validate_shape(shape):
 
 
 def _validate_shape_intradistance(shape):
-
     if not (hasattr(shape, "__iter__") and len(shape) == 2):
         raise ValueError('Error! "shape" must be a tuple with size 2!')
     return True
@@ -23,11 +22,13 @@ distributions_list = {
         param1 - param2, param1 + param2, shape
     ),
     "gaussian": lambda shape, param1, param2: np.random.normal(param1, param2, shape),
-    # 'logistic': lambda shape, param: np.random.logistic(0, param, shape),
-    # 'triangular': lambda shape, param: np.random.triangular(-param, 0, param, shape),
-    # 'gamma': lambda shape, param: np.random.gamma(2 + 8 * np.random.rand(), param / 5, shape),
-    # 'gap': lambda shape, param: gap(shape, param),
-    # 'binaire': lambda shape,param : np.random.choice([0,1],shape)
+    "logistic": lambda shape, param1, param2: np.random.logistic(param1, param2, shape),
+    # "triangular": lambda shape, param1,param2: np.random.triangular(-param1, 0, param2, shape),
+    # "gamma": lambda shape, param1,param2: np.random.gamma(
+    #     2 + 8 * np.random.rand(), param1 / 5, shape
+    # ),
+    # "gap": lambda shape, param1,param2: gap(shape, param1),
+    # "binaire": lambda shape, param1,param2: np.random.choice([0, 1], shape),
 }
 """List of distributions for which you can just provide a string as input."""
 
